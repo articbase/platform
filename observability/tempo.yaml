@@ -1,0 +1,42 @@
+server:
+  http_listen_port: 3200
+
+query_frontend:
+  metrics:
+    query_backend_after: 1ns
+    concurrent_jobs: 4
+    target_bytes_per_job: 104857600
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        http:
+          endpoint: 0.0.0.0:4318
+
+metrics_generator:
+  ring:
+    kvstore:
+      store: inmemory
+  storage:
+    path: /tmp/tempo/generator
+
+ingester:
+  max_block_duration: 5m
+
+compactor:
+  compaction:
+    block_retention: 24h
+
+storage:
+  trace:
+    backend: local
+    wal:
+      path: /tmp/tempo/wal
+    local:
+      path: /tmp/tempo/blocks
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors: []

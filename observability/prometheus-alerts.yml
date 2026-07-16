@@ -1,0 +1,20 @@
+groups:
+  - name: platform-observability
+    rules:
+      - alert: ObservabilityServiceDown
+        expr: up{job=~"alertmanager|grafana|otel-collector|prometheus|tempo"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} is down"
+          description: "Prometheus cannot scrape {{ $labels.job }} at {{ $labels.instance }}."
+
+      - alert: ApiEndpointServerErrors
+        expr: sum by (http_method, http_target) (increase(http_server_duration_milliseconds_count{http_target=~"/.+",http_status_code=~"5.."}[5m])) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.http_method }} {{ $labels.http_target }} has server errors"
+          description: "The endpoint returned one or more 5xx responses during the last 5 minutes."
